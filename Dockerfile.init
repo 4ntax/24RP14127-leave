@@ -1,0 +1,11 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY db/config.js ./db/
+COPY db/seed.js ./db/
+
+RUN npm install
+
+CMD ["node", "db/seed.js"]
