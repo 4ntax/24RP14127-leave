@@ -7,7 +7,8 @@ describe('Employee API Endpoints', () => {
     let server;
 
     beforeAll(async () => {
-        server = app.listen(0);        // Initialize tables
+        server = app.listen(0);
+        // Initialize tables
         await new Promise((resolve) => {
             db.serialize(() => {
                 db.run(`CREATE TABLE IF NOT EXISTS employees (
@@ -46,8 +47,6 @@ describe('Employee API Endpoints', () => {
         if (server) {
             await new Promise((resolve) => server.close(resolve));
         }
-        // Close database connection
-        await new Promise((resolve) => db.close(() => resolve()));
     });
 
     test('GET /api/employees should return empty array initially', async () => {
@@ -84,30 +83,36 @@ describe('Leave Request API Endpoints', () => {
     beforeAll(async () => {
         server = app.listen(0);
         // Initialize tables
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
             db.serialize(() => {
-                db.run(`DROP TABLE IF EXISTS leave_requests`);
-                db.run(`DROP TABLE IF EXISTS employees`);
-                db.run(`CREATE TABLE IF NOT EXISTS employees (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    email TEXT UNIQUE NOT NULL,
-                    department TEXT NOT NULL,
-                    leaveBalance INTEGER DEFAULT 20
-                )`);
-                db.run(`CREATE TABLE IF NOT EXISTS leave_requests (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    employeeId INTEGER NOT NULL,
-                    startDate TEXT NOT NULL,
-                    endDate TEXT NOT NULL,
-                    reason TEXT NOT NULL,
-                    type TEXT NOT NULL,
-                    status TEXT DEFAULT 'PENDING',
-                    createdAt TEXT NOT NULL,
-                    FOREIGN KEY (employeeId) REFERENCES employees (id)
-                )`, [], (err) => {
+                db.run(`DROP TABLE IF EXISTS leave_requests`, [], (err) => {
                     if (err) reject(err);
-                    resolve();
+                    db.run(`DROP TABLE IF EXISTS employees`, [], (err) => {
+                        if (err) reject(err);
+                        db.run(`CREATE TABLE IF NOT EXISTS employees (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            name TEXT NOT NULL,
+                            email TEXT UNIQUE NOT NULL,
+                            department TEXT NOT NULL,
+                            leaveBalance INTEGER DEFAULT 20
+                        )`, [], (err) => {
+                            if (err) reject(err);
+                            db.run(`CREATE TABLE IF NOT EXISTS leave_requests (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                employeeId INTEGER NOT NULL,
+                                startDate TEXT NOT NULL,
+                                endDate TEXT NOT NULL,
+                                reason TEXT NOT NULL,
+                                type TEXT NOT NULL,
+                                status TEXT DEFAULT 'PENDING',
+                                createdAt TEXT NOT NULL,
+                                FOREIGN KEY (employeeId) REFERENCES employees (id)
+                            )`, [], (err) => {
+                                if (err) reject(err);
+                                resolve();
+                            });
+                        });
+                    });
                 });
             });
         });
@@ -129,6 +134,13 @@ describe('Leave Request API Endpoints', () => {
         if (server) {
             await new Promise((resolve) => server.close(resolve));
         }
+        // Close database connection after all tests
+        await new Promise((resolve, reject) => {
+            db.close((err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
     });
 
     test('POST /api/leaves should create new leave request', async () => {
