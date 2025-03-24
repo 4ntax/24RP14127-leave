@@ -118,22 +118,28 @@ app.get('/api/employees/:id/leaves', (req, res) => {
     });
 });
 
-const startServer = (port) => {
-    try {
-        app.listen(port, () => {
-            console.log(`Server is running on port ${port}`);
-        }).on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-                console.log(`Port ${port} is busy, trying port ${port + 1}`);
-                startServer(port + 1);
-            } else {
-                console.error('Server error:', err);
-            }
-        });
-    } catch (err) {
-        console.error('Failed to start server:', err);
-    }
-};
+// Export app for testing
+module.exports = app;
 
-const PORT = process.env.PORT || 3000;
-startServer(PORT);
+// Only start server if this file is run directly
+if (require.main === module) {
+    const startServer = (port) => {
+        try {
+            app.listen(port, () => {
+                console.log(`Server is running on port ${port}`);
+            }).on('error', (err) => {
+                if (err.code === 'EADDRINUSE') {
+                    console.log(`Port ${port} is busy, trying port ${port + 1}`);
+                    startServer(port + 1);
+                } else {
+                    console.error('Server error:', err);
+                }
+            });
+        } catch (err) {
+            console.error('Failed to start server:', err);
+        }
+    };
+
+    const PORT = process.env.PORT || 3000;
+    startServer(PORT);
+}
