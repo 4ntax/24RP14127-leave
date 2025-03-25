@@ -12,7 +12,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npx jest",
+    "test": "jest",
     "dev": "nodemon index.js"
   },
   "author": "",
