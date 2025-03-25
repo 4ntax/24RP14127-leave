@@ -12,7 +12,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "npx jest --detectOpenHandles --forceExit",
     "dev": "nodemon index.js"
   },
   "author": "",
